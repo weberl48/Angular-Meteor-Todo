@@ -186,3 +186,71 @@ Filtering collection syntax
           <span class="text">
           <strong>{{task.username}}</strong> - {{task.text}}
         </span>
+###Automatic accounts UI
+        - meteor add accounts-ui accounts-password
+        - <meteor-include src="loginButtons"></meteor-include>
+###Getting information about the logged-in user
+        - {{$root.currentUser.username}} display the logged in user's username.
+        - Meteor.userId() to get the current user's id, or Meteor.user() to get the whole user document.
+###Custom templates
+  - You can choose not to use the accounts-ui package template and create your own Angular login templates.
+
+#Security with methods
+- any real application needs to control permissions for its data
+- declaring methods the best way to do this
+- instead of the client code directly calling insert, update, and remove, it will instead call methods that will check if the user is authorized to complete the action
+### Removing insecure
+- insecure package added by default.
+- package allows us to edit the database from the client.
+- remove this package:
+        meteor remove insecure
+### Defining methods
+- one method for each database operation we want to perform on the client.
+- Methods should be defined in code that is executed on the client and the server
+- Meteor Methods:
+```javascript
+        Meteor.methods({
+          addTask: function (text) {
+            // Make sure the user is logged in before inserting a task
+            if (! Meteor.userId()) {
+              throw new Meteor.Error('not-authorized');
+            }
+
+            Tasks.insert({
+              text: text,
+              createdAt: new Date(),
+              owner: Meteor.userId(),
+              username: Meteor.user().username
+            });
+          },
+          deleteTask: function (taskId) {
+            Tasks.remove(taskId);
+          },
+          setChecked: function (taskId, setChecked) {
+            Tasks.update(taskId, { $set: { checked: setChecked} });
+          }
+        });
+```
+- update the places we were operating on the collection to use the methods instead:
+  ```javascript    
+        $scope.addTask = function (newTask) {
+                $meteor.call('addTask', newTask);
+              };
+
+              $scope.deleteTask = function (task) {
+                $meteor.call('deleteTask', task._id);
+              };
+
+              $scope.setChecked = function (task) {
+                $meteor.call('setChecked', task._id, !task.checked);
+              };
+```
+-  handle the changes in the template:
+        <button class="delete" ng-click="deleteTask(task)">&times;</button>
+
+        <input type="checkbox" ng-checked="task.checked"
+             ng-click="setChecked(task)" class="toggle-checked" />
+####Why?
+1. When we insert tasks into the database, we can now securely verify that the user is logged in, that the createdAt field is correct, and that the owner and username fields are correct and the user isn't impersonating anyone.
+2. We can add extra validation logic to setChecked and deleteTask in later steps when users can make tasks private.
+3. Our client code is now more separated from our database logic. Instead of a lot of stuff happening inside our event handlers, we now have methods that can be called from anywhere.
