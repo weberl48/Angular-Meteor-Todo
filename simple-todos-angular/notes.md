@@ -47,9 +47,10 @@
         <input ng-model="newTask" type="text"
              name="text" placeholder="Type to add new tasks" />
         </form>
-      //_______________________________________________________________________________
-      //_______________________________________________________________________________
+
 ```
+Attaching events to templates:
+  -  listening to the submit event on our form to call the addTask scope function and to reset the input field.
 #### simple-todos-angular.js:
 ```javascript
         $scope.addTask = function (newTask) {
@@ -58,4 +59,22 @@
                createdAt: new Date() }
              );
            };    
+```
+Inserting into a collection:
+  - adding a task to the tasks collection by calling
+  ```javascript
+        $scope.tasks.push()
+```
+  - Being able to insert anything into the database from the client isn't very secure
+
+###Sorting our tasks
+- Angular sort filter can be used, use a different method because it is better for real world use cases.
+
+####  simple-todos-angular.js:
+```javascript
+  // Replace the Tasks collection variable with a function inside our $meteor.collection service call.
+  //function will return a the result of calling the find function with the sort parameter on our Tasks
+        $scope.tasks = $meteor.collection( function() {
+          return Tasks.find({}, { sort: { createdAt: -1 } })
+      });
 ```

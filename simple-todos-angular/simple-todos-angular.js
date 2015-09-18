@@ -10,7 +10,9 @@ if (Meteor.isClient) {
     function($scope, $meteor) {
       // using $meteor service to bind Tasks collection to $scope.tasks
       // every change will be sunced in real time accross stack.
-      $scope.tasks = $meteor.collection(Tasks);
+      $scope.tasks = $meteor.collection( function() {
+        return Tasks.find({}, { sort: { createdAt: -1 } })
+      });
       $scope.addTask = function(newTask) {
         $scope.tasks.push({
           text: newTask,
