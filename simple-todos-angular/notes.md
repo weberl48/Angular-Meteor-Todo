@@ -78,3 +78,24 @@ Inserting into a collection:
           return Tasks.find({}, { sort: { createdAt: -1 } })
       });
 ```
+##Checking off and Deleting Tasks
+```javascript
+        <ul ng-repeat="task in tasks">
+            <li ng-class="{'checked': task.checked}">
+              <button class="delete" ng-click="tasks.remove(task)">&times;</button>
+
+              <input type="checkbox" ng-model="task.checked" class="toggle-checked" />
+
+              <span class="text">{{task.text}}</span>
+            </li>
+          </ul>
+```
+  Update:
+    - bind the checked state of each task to a checkbox with Angular
+    - Meteor saves and syncs the stat across all clients. No code needed
+  Delete:
+    - tasks.remove(task): $meteor.collection helper remove takes an object or the id of an object and removes it from the database
+  Classes:
+    - bind the checked state of a task to a class with ng-class
+    - <li ng-class="{'checked': task.checked}">
+      - if the checked property of a task is true, the checked class is added to our list item. 
