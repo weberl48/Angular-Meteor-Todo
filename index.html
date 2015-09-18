@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Angular-meteor-todo by weberl48</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Angular-meteor-todo</h1>
+      <h2 class="project-tagline">Notes</h2>
+      <a href="https://github.com/weberl48/Angular-Meteor-Todo" class="btn">View on GitHub</a>
+      <a href="https://github.com/weberl48/Angular-Meteor-Todo/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/weberl48/Angular-Meteor-Todo/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h2>
+<a id="angular-templates-in-meteor" class="anchor" href="#angular-templates-in-meteor" aria-hidden="true"><span class="octicon octicon-link"></span></a>Angular Templates in Meteor</h2>
+
+<ul>
+<li>angular-meteor package parses all .ng.html files and puts them in Angular's template cache with the id of their full path</li>
+<li>when a .ng.html file is placed in /client, it is available to ng-include or ui-router as client/template.ng.html</li>
+<li>all code in ng.html is compiled with Angular. Angular binds the data into the templates
+###HTML Files in Meteor define Templates</li>
+<li>meteor parses all .HTML files and identifies three top-level tags: ,, and .</li>
+<li> is compiled into Meteor templates which can be referenced by HTML: {{&gt; templateName}}, JS: Template.templateName.
+## Storing Tasks in a Collection</li>
+<li>collections are meteors way of storing persistent data</li>
+<li>collections can be accessed both server and client side</li>
+<li>easy to write view logic without having to write a lot of server code</li>
+<li>collections update themselves automatically, view will automatically display the most up-to-date data</li>
+</ul>
+
+<div class="highlight highlight-source-js"><pre>          MyCollection <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">Mongo.Collection</span>(<span class="pl-s"><span class="pl-pds">"</span>my-collection<span class="pl-pds">"</span></span>);
+          <span class="pl-c">//SERVER: sets up MongoDB collection on</span>
+          <span class="pl-c">//CLIENT: creates a cache connection to the server collection</span></pre></div>
+
+<div class="highlight highlight-source-js"><pre>          <span class="pl-c">// Create new Mongo Collection</span>
+          Tasks <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">Mongo.Collection</span>(<span class="pl-s"><span class="pl-pds">'</span>tasks<span class="pl-pds">'</span></span>);
+
+          <span class="pl-k">if</span> (Meteor.isClient) {
+
+            <span class="pl-c">// This code only runs on the client</span>
+            angular.module(<span class="pl-s"><span class="pl-pds">'</span>simple-todos<span class="pl-pds">'</span></span>,[<span class="pl-s"><span class="pl-pds">'</span>angular-meteor<span class="pl-pds">'</span></span>]);
+
+            angular.module(<span class="pl-s"><span class="pl-pds">'</span>simple-todos<span class="pl-pds">'</span></span>).controller(<span class="pl-s"><span class="pl-pds">'</span>TodosListCtrl<span class="pl-pds">'</span></span>, [<span class="pl-s"><span class="pl-pds">'</span>$scope<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>$meteor<span class="pl-pds">'</span></span>,
+                <span class="pl-k">function</span> (<span class="pl-smi">$scope</span>, <span class="pl-smi">$meteor</span>) {
+                  <span class="pl-c">// using #meteor service to bind Tasks collection to $scope.tasks</span>
+                  <span class="pl-c">// every change will be sunced in real time accross stack.</span>
+                  $scope.tasks <span class="pl-k">=</span> $meteor.collection(Tasks);
+
+                }]);
+            }
+</pre></div>
+
+<h3>
+<a id="inserting-tasks-from-the-console" class="anchor" href="#inserting-tasks-from-the-console" aria-hidden="true"><span class="octicon octicon-link"></span></a>Inserting tasks from the console</h3>
+
+<pre><code>  opens a console into your app's local development database:
+    - meteor mongo
+    - db.tasks.insert({ text: "Hello world!", createdAt: new Date() });
+  - The browser will immediately update to show the new task.
+  - didn't have to write any code to connect the server-side database to our front-end code — it just happened automatically.
+</code></pre>
+
+<h2>
+<a id="adding-tasks-with-a-form" class="anchor" href="#adding-tasks-with-a-form" aria-hidden="true"><span class="octicon octicon-link"></span></a>Adding Tasks With A form</h2>
+
+<h4>
+<a id="todos-listnghtml" class="anchor" href="#todos-listnghtml" aria-hidden="true"><span class="octicon octicon-link"></span></a>todos-list.ng.html:</h4>
+
+<div class="highlight highlight-source-js"><pre>        <span class="pl-k">&lt;</span>form <span class="pl-k">class</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>new-task<span class="pl-pds">"</span></span> ng<span class="pl-k">-</span>submit<span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>addTask(newTask); newTask='';<span class="pl-pds">"</span></span><span class="pl-k">&gt;</span>
+        <span class="pl-k">&lt;</span>input ng<span class="pl-k">-</span>model<span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>newTask<span class="pl-pds">"</span></span> type<span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>text<span class="pl-pds">"</span></span>
+             name<span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>text<span class="pl-pds">"</span></span> placeholder<span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>Type to add new tasks<span class="pl-pds">"</span></span> <span class="pl-k">/&gt;</span>
+        <span class="pl-k">&lt;/</span>form<span class="pl-k">&gt;</span>
+</pre></div>
+
+<p>Attaching events to templates:</p>
+
+<ul>
+<li> listening to the submit event on our form to call the addTask scope function and to reset the input field.
+#### simple-todos-angular.js:</li>
+</ul>
+
+<div class="highlight highlight-source-js"><pre>        <span class="pl-c1">$scope</span>.<span class="pl-en">addTask</span> <span class="pl-k">=</span> <span class="pl-k">function</span> (<span class="pl-smi">newTask</span>) {
+             $scope.tasks.<span class="pl-c1">push</span>( {
+               text<span class="pl-k">:</span> newTask,
+               createdAt<span class="pl-k">:</span> <span class="pl-k">new</span> <span class="pl-en">Date</span>() }
+             );
+           };    </pre></div>
+
+<p>Inserting into a collection:</p>
+
+<ul>
+<li>adding a task to the tasks collection by calling
+<code>javascript
+      $scope.tasks.push()
+</code>
+</li>
+<li>Being able to insert anything into the database from the client isn't very secure</li>
+</ul>
+
+<h3>
+<a id="sorting-our-tasks" class="anchor" href="#sorting-our-tasks" aria-hidden="true"><span class="octicon octicon-link"></span></a>Sorting our tasks</h3>
+
+<ul>
+<li>Angular sort filter can be used, use a different method because it is better for real world use cases.</li>
+</ul>
+
+<h4>
+<a id="simple-todos-angularjs" class="anchor" href="#simple-todos-angularjs" aria-hidden="true"><span class="octicon octicon-link"></span></a>simple-todos-angular.js:</h4>
+
+<div class="highlight highlight-source-js"><pre>  <span class="pl-c">// Replace the Tasks collection variable with a function inside our $meteor.collection service call.</span>
+  <span class="pl-c">//function will return a the result of calling the find function with the sort parameter on our Tasks</span>
+        $scope.tasks <span class="pl-k">=</span> $meteor.collection( <span class="pl-k">function</span>() {
+          <span class="pl-k">return</span> Tasks.<span class="pl-c1">find</span>({}, { sort<span class="pl-k">:</span> { createdAt<span class="pl-k">:</span> <span class="pl-k">-</span><span class="pl-c1">1</span> } })
+      });</pre></div>
+
+<h2>
+<a id="checking-off-and-deleting-tasks" class="anchor" href="#checking-off-and-deleting-tasks" aria-hidden="true"><span class="octicon octicon-link"></span></a>Checking off and Deleting Tasks</h2>
+
+<div class="highlight highlight-source-js"><pre>        <span class="pl-k">&lt;</span>ul ng<span class="pl-k">-</span>repeat<span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>task in tasks<span class="pl-pds">"</span></span><span class="pl-k">&gt;</span>
+            <span class="pl-k">&lt;</span>li ng<span class="pl-k">-</span><span class="pl-k">class</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>{'checked': task.checked}<span class="pl-pds">"</span></span><span class="pl-k">&gt;</span>
+              <span class="pl-k">&lt;</span>button <span class="pl-k">class</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>delete<span class="pl-pds">"</span></span> ng<span class="pl-k">-</span>click<span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>tasks.remove(task)<span class="pl-pds">"</span></span><span class="pl-k">&gt;&amp;</span>times;<span class="pl-k">&lt;/</span>button<span class="pl-k">&gt;</span>
+
+              <span class="pl-k">&lt;</span>input type<span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>checkbox<span class="pl-pds">"</span></span> ng<span class="pl-k">-</span>model<span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>task.checked<span class="pl-pds">"</span></span> <span class="pl-k">class</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>toggle-checked<span class="pl-pds">"</span></span> <span class="pl-k">/&gt;</span>
+
+              <span class="pl-k">&lt;</span>span <span class="pl-k">class</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>text<span class="pl-pds">"</span></span><span class="pl-k">&gt;</span>{{task.<span class="pl-c1">text</span>}}<span class="pl-k">&lt;/</span>span<span class="pl-k">&gt;</span>
+            <span class="pl-k">&lt;/</span>li<span class="pl-k">&gt;</span>
+          <span class="pl-k">&lt;/</span>ul<span class="pl-k">&gt;</span></pre></div>
+
+<p>Update:
+    - bind the checked state of each task to a checkbox with Angular
+    - Meteor saves and syncs the stat across all clients. No code needed</p>
+
+<p>Delete:
+    - tasks.remove(task): $meteor.collection helper remove takes an object or the id of an object and removes it from the database</p>
+
+<p>Classes:
+    - bind the checked state of a task to a class with ng-class
+    - </p>
+      - if the checked property of a task is true, the checked class is added to our list item.
+
+<h1>
+<a id="running-your-app-on-android-or-ios" class="anchor" href="#running-your-app-on-android-or-ios" aria-hidden="true"><span class="octicon octicon-link"></span></a>Running your app on Android or iOS</h1>
+
+<ul>
+<li>Angular needs the main document to be ready so it can bootstrap</li>
+<li>different devices have different events for ready.</li>
+<li>
+<p>change the way we bootstrap our Angular app</p>
+
+<ul>
+<li>remove ng-app from the  (simple-todos-angular.html)</li>
+<li>simple-todos-angular.js Bootstrap Angular to mobile as well</li>
+</ul>
+
+<div class="highlight highlight-source-js"><pre><span class="pl-k">function</span> <span class="pl-en">onReady</span>() {
+  angular.bootstrap(<span class="pl-c1">document</span>, [<span class="pl-s"><span class="pl-pds">'</span>simple-todos<span class="pl-pds">'</span></span>]);
+}
+
+<span class="pl-k">if</span> (Meteor.isCordova)
+  angular.element(<span class="pl-c1">document</span>).on(<span class="pl-s"><span class="pl-pds">'</span>deviceready<span class="pl-pds">'</span></span>, onReady);
+<span class="pl-k">else</span>
+  angular.element(<span class="pl-c1">document</span>).ready(onReady);</pre></div>
+
+<h1>
+<a id="filtering-collections" class="anchor" href="#filtering-collections" aria-hidden="true"><span class="octicon octicon-link"></span></a>Filtering collections</h1>
+</li>
+<li>client-side data filtering feature users can check a box to see only incomplete tasks</li>
+<li>Add hideComplete checkbox to template:</li>
+</ul>
+
+<pre><code>  &lt;label class="hide-completed"&gt;
+      &lt;input type="checkbox" ng-model="$parent.hideCompleted"/&gt;
+      Hide Completed Tasks
+    &lt;/label&gt;
+
+</code></pre>
+
+<ul>
+<li>checkbox binds to the scope's hideCompleted variable.</li>
+<li>$parent creates a new child scope</li>
+<li>update our $scope.tasks query each time hideCompleted changes.
+###
+Filtering collection syntax</li>
+<li>
+<p>query to return only the not completed todos looks like that:</p>
+
+<pre><code>Tasks.find({ checked: {$ne: true} }, { sort: { createdAt: -1 } })
+</code></pre>
+
+<h3>
+<a id="connecting-angular-bindings-to-meteors-reactivity" class="anchor" href="#connecting-angular-bindings-to-meteors-reactivity" aria-hidden="true"><span class="octicon octicon-link"></span></a>Connecting Angular bindings to Meteor's reactivity</h3>
+</li>
+<li>$scope.getReactively function that turns Angular scope variables into Meteor reactive variables.</li>
+<li>
+<p>Make query parameter reactive:</p>
+
+<div class="highlight highlight-source-js"><pre>      <span class="pl-k">function</span> (<span class="pl-smi">$scope</span>, <span class="pl-smi">$meteor</span>) {
+
+      $scope.tasks <span class="pl-k">=</span> $meteor.collection(<span class="pl-k">function</span>() {
+      <span class="pl-k">return</span> Tasks.<span class="pl-c1">find</span>($scope.getReactively(<span class="pl-s"><span class="pl-pds">'</span>query<span class="pl-pds">'</span></span>), {sort<span class="pl-k">:</span> {createdAt<span class="pl-k">:</span> <span class="pl-k">-</span><span class="pl-c1">1</span>}})
+      });</pre></div>
+
+<h4>
+<a id="showing-a-count-of-incomplete-tasks" class="anchor" href="#showing-a-count-of-incomplete-tasks" aria-hidden="true"><span class="octicon octicon-link"></span></a>Showing a count of incomplete tasks</h4>
+
+<div class="highlight highlight-source-js"><pre>       <span class="pl-c1">$scope</span>.<span class="pl-en">incompleteCount</span> <span class="pl-k">=</span> <span class="pl-k">function</span> () {
+              <span class="pl-k">return</span> Tasks.<span class="pl-c1">find</span>({ checked<span class="pl-k">:</span> {$ne<span class="pl-k">:</span> <span class="pl-c1">true</span>} }).count();
+            };</pre></div>
+
+<h1>
+<a id="adding-user-accounts" class="anchor" href="#adding-user-accounts" aria-hidden="true"><span class="octicon octicon-link"></span></a>Adding user accounts</h1>
+</li>
+<li>accounts system and a drop-in login user interface that lets you add multi-user functionality to your app in minutes.</li>
+<li>      meteor add accounts-ui accounts-password</li>
+<li>Add Blaze loginButtons template to HTML:
+    </li>
+<li> meteor-include directive let's you add any Blaze template into your Angular templates.</li>
+<li>loginButtons which is the Blaze template for user authentication flow supplied with the accounts-ui package.</li>
+<li>add the following code to configure the accounts UI to use usernames instead of email addresses:</li>
+</ul>
+
+<div class="highlight highlight-source-js"><pre>        Accounts.ui.config({
+        passwordSignupFields<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>USERNAME_ONLY<span class="pl-pds">"</span></span>
+        });</pre></div>
+
+<ul>
+<li>Only display the new task input field to logged in users
+
+<ul>
+<li>Add owner and username to created task:</li>
+</ul>
+</li>
+</ul>
+
+<div class="highlight highlight-source-js"><pre>        <span class="pl-c1">$scope</span>.<span class="pl-en">addTask</span> <span class="pl-k">=</span> <span class="pl-k">function</span>(<span class="pl-smi">newTask</span>) {
+        $scope.tasks.<span class="pl-c1">push</span>( {
+            text<span class="pl-k">:</span> newTask,
+            createdAt<span class="pl-k">:</span> <span class="pl-k">new</span> <span class="pl-en">Date</span>(),             <span class="pl-c">// current time</span>
+            owner<span class="pl-k">:</span> Meteor.userId(),            <span class="pl-c">// _id of logged in user</span>
+            username<span class="pl-k">:</span> Meteor.user().username }  <span class="pl-c">// username of logged in user</span>
+        );
+        };
+</pre></div>
+
+<ul>
+<li>add an ng-show directive to only show the form when there is a logged in user:
+    </li>
+<li>add a statement to display the username field on each task:
+      
+      <strong>{{task.username}}</strong> - {{task.text}}
+    
+###Automatic accounts UI
+    - meteor add accounts-ui accounts-password
+    - 
+###Getting information about the logged-in user
+    - {{$root.currentUser.username}} display the logged in user's username.
+    - Meteor.userId() to get the current user's id, or Meteor.user() to get the whole user document.
+###Custom templates</li>
+<li>You can choose not to use the accounts-ui package template and create your own Angular login templates.</li>
+</ul>
+
+<h1>
+<a id="security-with-methods" class="anchor" href="#security-with-methods" aria-hidden="true"><span class="octicon octicon-link"></span></a>Security with methods</h1>
+
+<ul>
+<li>any real application needs to control permissions for its data</li>
+<li>declaring methods the best way to do this</li>
+<li>instead of the client code directly calling insert, update, and remove, it will instead call methods that will check if the user is authorized to complete the action
+### Removing insecure</li>
+<li>insecure package added by default.</li>
+<li>package allows us to edit the database from the client.</li>
+<li>remove this package:
+    meteor remove insecure
+### Defining methods</li>
+<li>one method for each database operation we want to perform on the client.</li>
+<li>Methods should be defined in code that is executed on the client and the server</li>
+<li>Meteor Methods:</li>
+</ul>
+
+<div class="highlight highlight-source-js"><pre>        Meteor.methods({
+          <span class="pl-en">addTask</span><span class="pl-k">:</span> <span class="pl-k">function</span> (<span class="pl-smi">text</span>) {
+            <span class="pl-c">// Make sure the user is logged in before inserting a task</span>
+            <span class="pl-k">if</span> (<span class="pl-k">!</span> Meteor.userId()) {
+              <span class="pl-k">throw</span> <span class="pl-k">new</span> <span class="pl-en">Meteor.Error</span>(<span class="pl-s"><span class="pl-pds">'</span>not-authorized<span class="pl-pds">'</span></span>);
+            }
+
+            Tasks.insert({
+              text<span class="pl-k">:</span> text,
+              createdAt<span class="pl-k">:</span> <span class="pl-k">new</span> <span class="pl-en">Date</span>(),
+              owner<span class="pl-k">:</span> Meteor.userId(),
+              username<span class="pl-k">:</span> Meteor.user().username
+            });
+          },
+          <span class="pl-en">deleteTask</span><span class="pl-k">:</span> <span class="pl-k">function</span> (<span class="pl-smi">taskId</span>) {
+            Tasks.remove(taskId);
+          },
+          <span class="pl-en">setChecked</span><span class="pl-k">:</span> <span class="pl-k">function</span> (<span class="pl-smi">taskId</span>, <span class="pl-smi">setChecked</span>) {
+            Tasks.update(taskId, { $set<span class="pl-k">:</span> { checked<span class="pl-k">:</span> setChecked} });
+          }
+        });</pre></div>
+
+<ul>
+<li>
+<p>update the places we were operating on the collection to use the methods instead:</p>
+
+<div class="highlight highlight-source-js"><pre>      <span class="pl-c1">$scope</span>.<span class="pl-en">addTask</span> <span class="pl-k">=</span> <span class="pl-k">function</span> (<span class="pl-smi">newTask</span>) {
+              $meteor.<span class="pl-c1">call</span>(<span class="pl-s"><span class="pl-pds">'</span>addTask<span class="pl-pds">'</span></span>, newTask);
+            };
+
+            <span class="pl-c1">$scope</span>.<span class="pl-en">deleteTask</span> <span class="pl-k">=</span> <span class="pl-k">function</span> (<span class="pl-smi">task</span>) {
+              $meteor.<span class="pl-c1">call</span>(<span class="pl-s"><span class="pl-pds">'</span>deleteTask<span class="pl-pds">'</span></span>, task._id);
+            };
+
+            <span class="pl-c1">$scope</span>.<span class="pl-en">setChecked</span> <span class="pl-k">=</span> <span class="pl-k">function</span> (<span class="pl-smi">task</span>) {
+              $meteor.<span class="pl-c1">call</span>(<span class="pl-s"><span class="pl-pds">'</span>setChecked<span class="pl-pds">'</span></span>, task._id, <span class="pl-k">!</span>task.<span class="pl-c1">checked</span>);
+            };</pre></div>
+</li>
+<li>
+<p>handle the changes in the template:
+    ×</p>
+
+<pre><code>&lt;input type="checkbox" ng-checked="task.checked"
+     ng-click="setChecked(task)" class="toggle-checked" /&gt;
+</code></pre>
+
+<h4>
+<a id="why" class="anchor" href="#why" aria-hidden="true"><span class="octicon octicon-link"></span></a>Why?</h4>
+</li>
+<li>When we insert tasks into the database, we can now securely verify that the user is logged in, that the createdAt field is correct, and that the owner and username fields are correct and the user isn't impersonating anyone.</li>
+<li>We can add extra validation logic to setChecked and deleteTask in later steps when users can make tasks private.</li>
+<li>Our client code is now more separated from our database logic. Instead of a lot of stuff happening inside our event handlers, we now have methods that can be called from anywhere.</li>
+</ul>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/weberl48/Angular-Meteor-Todo">Angular-meteor-todo</a> is maintained by <a href="https://github.com/weberl48">weberl48</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
