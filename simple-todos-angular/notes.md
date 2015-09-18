@@ -93,9 +93,96 @@ Inserting into a collection:
   Update:
     - bind the checked state of each task to a checkbox with Angular
     - Meteor saves and syncs the stat across all clients. No code needed
+
   Delete:
     - tasks.remove(task): $meteor.collection helper remove takes an object or the id of an object and removes it from the database
+
   Classes:
     - bind the checked state of a task to a class with ng-class
     - <li ng-class="{'checked': task.checked}">
-      - if the checked property of a task is true, the checked class is added to our list item. 
+      - if the checked property of a task is true, the checked class is added to our list item.
+
+#Running your app on Android or iOS
+- Angular needs the main document to be ready so it can bootstrap
+- different devices have different events for ready.
+- change the way we bootstrap our Angular app
+  - remove ng-app from the <body> (simple-todos-angular.html)
+  - simple-todos-angular.js Bootstrap Angular to mobile as well
+  ```javascript
+  function onReady() {
+    angular.bootstrap(document, ['simple-todos']);
+  }
+
+  if (Meteor.isCordova)
+    angular.element(document).on('deviceready', onReady);
+  else
+    angular.element(document).ready(onReady);
+  ```
+#Filtering collections
+- client-side data filtering feature users can check a box to see only incomplete tasks
+- Add hideComplete checkbox to template:
+```
+  <label class="hide-completed">
+      <input type="checkbox" ng-model="$parent.hideCompleted"/>
+      Hide Completed Tasks
+    </label>
+
+  ```
+- checkbox binds to the scope's hideCompleted variable.
+- $parent creates a new child scope
+- update our $scope.tasks query each time hideCompleted changes.
+###
+Filtering collection syntax
+- query to return only the not completed todos looks like that:
+
+        Tasks.find({ checked: {$ne: true} }, { sort: { createdAt: -1 } })
+###Connecting Angular bindings to Meteor's reactivity
+- $scope.getReactively function that turns Angular scope variables into Meteor reactive variables.
+- Make query parameter reactive:
+  ```javascript
+        function ($scope, $meteor) {
+
+        $scope.tasks = $meteor.collection(function() {
+        return Tasks.find($scope.getReactively('query'), {sort: {createdAt: -1}})
+        });
+```
+####  Showing a count of incomplete tasks
+  ```javascript
+         $scope.incompleteCount = function () {
+                return Tasks.find({ checked: {$ne: true} }).count();
+              };
+  ```
+#Adding user accounts
+- accounts system and a drop-in login user interface that lets you add multi-user functionality to your app in minutes.
+-       meteor add accounts-ui accounts-password
+- Add Blaze loginButtons template to HTML:
+        <meteor-include src="loginButtons"></meteor-include>
+-  meteor-include directive let's you add any Blaze template into your Angular templates.
+- loginButtons which is the Blaze template for user authentication flow supplied with the accounts-ui package.
+- add the following code to configure the accounts UI to use usernames instead of email addresses:
+```javascript
+        Accounts.ui.config({
+        passwordSignupFields: "USERNAME_ONLY"
+        });
+```
+- Only display the new task input field to logged in users
+  - Add owner and username to created task:
+```javascript
+        $scope.addTask = function(newTask) {
+        $scope.tasks.push( {
+            text: newTask,
+            createdAt: new Date(),             // current time
+            owner: Meteor.userId(),            // _id of logged in user
+            username: Meteor.user().username }  // username of logged in user
+        );
+        };
+
+```
+  - add an ng-show directive to only show the form when there is a logged in user:
+        <form class="new-task"
+          ng-submit="addTask(newTask); newTask='';"
+          ng-show="$root.currentUser">
+  - add a statement to display the username field on each task:
+          <span class="text">
+          <strong>{{task.username}}</strong> - {{task.text}}
+        </span>
