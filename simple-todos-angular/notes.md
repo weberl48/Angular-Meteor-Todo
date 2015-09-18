@@ -254,3 +254,4 @@ Filtering collection syntax
 1. When we insert tasks into the database, we can now securely verify that the user is logged in, that the createdAt field is correct, and that the owner and username fields are correct and the user isn't impersonating anyone.
 2. We can add extra validation logic to setChecked and deleteTask in later steps when users can make tasks private.
 3. Our client code is now more separated from our database logic. Instead of a lot of stuff happening inside our event handlers, we now have methods that can be called from anywhere.
+# Filtering data with publish and subscribe
